@@ -1,20 +1,20 @@
 #include "Game.h"
 #include <math.h>
-#define SPU 20 //子弹撞击BOSS后的溅射半径
-#define POWER 10 //这个代表我们的火力
+#define SPU 40 //子弹撞击BOSS后的溅射半径
+#define POWER 1 //这个代表我们的火力
 #define BOSSWIDTH 100 //BOSS图像的宽度,BOSS用的中心点表示法
 #define BOSSHEIGHT 100 //BOSS图像的高度
 #define BOSSSPEED 120  //这个是BOSS神出鬼没的速度（最后要除以100的）
 #define BULLETRADIUS 30 //这个是天女散花的子弹半径
 #define BULLETSPEED 8   //这个是天女散花的子弹速度
 #define BOOMRADIUS 130     //这个是狂轰滥炸的最大爆炸半径
-#define BOOMSPEED 4        //这个是狂轰滥炸爆炸扩张速度
+#define BOOMSPEED 3        //这个是狂轰滥炸爆炸扩张速度
 #define WALLRADIUS 40 //这个是障碍物的半径
 #define HALF  60  //这个是小卒的直径
 #define SSS 30000 //这个代表BOSS神出鬼没的加速值，值越高，加速越慢！
 double x, y, xs, ys; //x与y是BOSS神出鬼没时的坐标值，xs与ys是神出鬼没时的两个速度值
 int falx, faly; //这两个代表BOSS神出鬼没时的假身所在位置
-int sparkX,sparkY ; //这两个代表射中BOSS身体时溅起的火花位置（平时隐藏起来）
+int sparkX, sparkY; //这两个代表射中BOSS身体时溅起的火花位置（平时隐藏起来）
 bool Game::InitLevel8()
 {
 	delete my;
@@ -54,8 +54,8 @@ bool Game::InitLevel8()
 		obstacle[i] = new Obstacle(-1000, -1000, 0);
 	obstacle[97] = new Obstacle(0, 0, 0); //其中我们用horizon代表神出鬼没的碰壁次数
 	obstacle[96] = new Obstacle(0, 0, 0); //这个是代表神出鬼没时的水平速度和垂直速度
-	mass = (HBITMAP)::LoadImage(NULL, L"image\\BOSS.bmp", IMAGE_BITMAP, BOSSWIDTH*2, BOSSHEIGHT*2, LR_LOADFROMFILE);//读取BOSS背景图
-	enemyDirection0[0] = (HBITMAP)::LoadImage(NULL, L"image\\绿球.bmp", IMAGE_BITMAP, HALF, HALF, LR_LOADFROMFILE);//读取外星小兵背景图
+	mass = (HBITMAP)::LoadImage(NULL, L"image\\BOSS.bmp", IMAGE_BITMAP, BOSSWIDTH * 2, BOSSHEIGHT * 2, LR_LOADFROMFILE);//读取BOSS背景图
+	enemyDirection0[0] = (HBITMAP)::LoadImage(NULL, L"image\\BOSS.bmp", IMAGE_BITMAP, HALF, HALF, LR_LOADFROMFILE);//读取外星小兵背景图
 	enemyDirection0[1] = (HBITMAP)::LoadImage(NULL, L"image\\太极环.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);//读取子弹背景图
 	enemyDirection0[2] = (HBITMAP)::LoadImage(NULL, L"image\\BOOM.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);//读取爆炸范围背景图
 	enemyDirection0[3] = (HBITMAP)::LoadImage(NULL, L"image\\光球.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);//读取炸弹模样背景图
@@ -63,6 +63,8 @@ bool Game::InitLevel8()
 	bmp = (HBITMAP)::LoadImage(NULL, L"image\\红怒.bmp", IMAGE_BITMAP, HALF, HALF, LR_LOADFROMFILE);  //读取怒卒背景图
 	bullet = (HBITMAP)::LoadImage(NULL, L"image\\大海.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE); //读取大海背景
 	gameOver = 0;
+	PlaySound(L"music\\8.wav", NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+	sparkX = sparkY = 0;
 	return false;
 }
 
@@ -76,20 +78,19 @@ void Game::FunState8()
 			enemy[0]->horizonTop + BOSSWIDTH>my->horizonTop &&
 			enemy[0]->verticalTop - BOSSHEIGHT < my->verticalTop &&
 			enemy[0]->verticalTop + BOSSHEIGHT >my->verticalTop)
-			my->HP -= 1000;
-		if (my->HP <= 0)
 		{
-			text = L"您已阵亡，游戏失败！";
+			text = L"您被BOSS碾压了，游戏失败！";
 			goto fail;
 		}
 		SelectObject(bufDc, backGround);
 		BitBlt(mDc, 0, 0, WIDTH, HEIGHT, bufDc, 0, 0, SRCCOPY);//这两行代码用来更新背景图
 
-		SelectObject(bufDc, bullet);
+		SelectObject(bufDc, bullet);//以下几行代码用于给大海贴图
 		TransparentBlt(mDc, 0, 0, WIDTH, BOSSHEIGHT, bufDc, 0, 0, LENGTH, LENGTH, RGB(0, 0, 0));
 		TransparentBlt(mDc, 0, 0, BOSSHEIGHT, HEIGHT, bufDc, 0, 0, LENGTH, LENGTH, RGB(0, 0, 0));
 		TransparentBlt(mDc, WIDTH - BOSSWIDTH, 0, BOSSWIDTH, HEIGHT, bufDc, 0, 0, LENGTH, LENGTH, RGB(0, 0, 0));
 		TransparentBlt(mDc, 0, HEIGHT - BOSSHEIGHT, WIDTH, BOSSWIDTH, bufDc, 0, 0, LENGTH, LENGTH, RGB(0, 0, 0));
+		
 		switch (my->direction) //下面这些是玩家位置的更新
 		{
 		case 0:
@@ -99,7 +100,7 @@ void Game::FunState8()
 			if (my->horizonTop < WIDTH - BOSSWIDTH - my->speed) my->horizonTop += my->speed;
 			break;
 		case 2:
-			if (my->verticalTop < HEIGHT -BOSSWIDTH - my->speed) my->verticalTop += my->speed;
+			if (my->verticalTop < HEIGHT - BOSSWIDTH - my->speed) my->verticalTop += my->speed;
 			break;
 		case 3:
 			if (my->horizonTop > BOSSWIDTH + my->speed) my->horizonTop -= my->speed;
@@ -128,42 +129,42 @@ void Game::FunState8()
 						int a = (rand() % 3) - 1;
 						if (enemy[i]->verticalTop + a*enemy[i]->speed > 0 + 25 &&
 							enemy[i]->verticalTop + a*enemy[i]->speed < HEIGHT - 25)//垂直是否越界，是则归位
-							enemy[i]->verticalTop+= a*enemy[i]->speed;
+							enemy[i]->verticalTop += a*enemy[i]->speed;
 					}
 
 					if (enemy[i]->speed == 1) //小卒没被激怒前的移动
 					{
-						double ex = my->horizonTop - enemy[i]->horizonTop;
-						double ey = my->verticalTop - enemy[i]->verticalTop;
-						if (sqrt(ex*ex + ey*ey) < (HALF + LENGTH) / 2)
-						{
-							my->HP -= 1;
-						} //以上这些用于处理龟卒撞到玩家
+						//double ex = my->horizonTop - enemy[i]->horizonTop;
+						//double ey = my->verticalTop - enemy[i]->verticalTop;
+						//if (sqrt(ex*ex + ey*ey) < (HALF + LENGTH) / 2)
+						//{
+						//	my->HP -= 1;
+						//} //以上这些用于处理龟卒撞到玩家
 
 						SelectObject(bufDc, enemyDirection0[0]);
-						TransparentBlt(mDc, enemy[i]->horizonTop - HALF/2, enemy[i]->verticalTop - HALF/2, HALF, HALF,
+						TransparentBlt(mDc, enemy[i]->horizonTop - HALF / 2, enemy[i]->verticalTop - HALF / 2, HALF, HALF,
 							bufDc, 0, 0, HALF, HALF, RGB(0, 0, 0));
 					}
 					else //小卒被激怒（中了BOSS的狂轰滥炸技能）后的状态
 					{
-						double ex = my->horizonTop - enemy[i]->horizonTop;
-						double ey = my->verticalTop - enemy[i]->verticalTop;
-						if (sqrt(ex*ex + ey*ey) < (HALF + LENGTH) / 2)
-						{
-							my->HP -= 5;
-						} //以上这些用于处理怒卒撞到玩家
+						//double ex = my->horizonTop - enemy[i]->horizonTop;
+						//double ey = my->verticalTop - enemy[i]->verticalTop;
+						//if (sqrt(ex*ex + ey*ey) < (HALF + LENGTH) / 2)
+						//{
+						//	my->HP -= 5;
+						//} //以上这些用于处理怒卒撞到玩家
 
 						SelectObject(bufDc, bmp);
-						TransparentBlt(mDc, enemy[i]->horizonTop - HALF/2, enemy[i]->verticalTop - HALF/2, HALF, HALF,
+						TransparentBlt(mDc, enemy[i]->horizonTop - HALF / 2, enemy[i]->verticalTop - HALF / 2, HALF, HALF,
 							bufDc, 0, 0, HALF, HALF, RGB(255, 255, 255));
 					}
 				}
-				else if (enemy[i]->fire == true) //小卒被玩家炮弹击中后，会引爆自身
+				else if (enemy[i]->fire == true) //小卒被玩家炮弹击中后，会引爆自身（天女散花）
 				{
 					double x[12] = { -1, -0.8660254, -0.5, 0, 0.5, 0.8660254, 1, 0.8660254, 0.5, 0, -0.5, -0.8660254 };//这个是12花的水平值
 					double y[12] = { 0 ,-0.5, -0.8660254, -1, -0.8660254, -0.5, 0, 0.5, 0.8660254, 1, 0.8660254, 0.5 };//12花的垂直值
 
-					for (int a=0;a<12;a++) //12个天女花
+					for (int a = 0;a<12;a++) //12个天女花
 					{
 						int ax = enemy[i]->horizonTop + enemy[i]->HP*x[a];
 						int ay = enemy[i]->verticalTop + enemy[i]->HP*y[a];
@@ -171,14 +172,14 @@ void Game::FunState8()
 						double dogface_x = ax - my->horizonTop;
 						double dogface_y = ay - my->verticalTop;
 
-						if (sqrt(dogface_x*dogface_x + dogface_y*dogface_y) <= LENGTH/2)
+						if (sqrt(dogface_x*dogface_x + dogface_y*dogface_y) <= LENGTH / 2)
 						{
 							text = L"您被天女散花打死，挑战失败";
 							goto fail;
-							my->HP -= 5;
+							/*my->HP -= 1;*/
 						}
 						SelectObject(bufDc, enemyDirection0[1]);
-						TransparentBlt(mDc, ax-25, ay-25, LENGTH, LENGTH,
+						TransparentBlt(mDc, ax - 25, ay - 25, LENGTH, LENGTH,
 							bufDc, 0, 0, LENGTH, LENGTH, RGB(0, 0, 0));//天女散花的贴图
 						for (int b = 1;b < 12;b++) //测试是否有别的小卒被引爆
 						{
@@ -187,7 +188,7 @@ void Game::FunState8()
 								double dogface_X = ax - enemy[b]->horizonTop;
 								double dogface_Y = ay - enemy[b]->verticalTop;
 
-								if (sqrt(dogface_X*dogface_X + dogface_Y*dogface_Y) <= (HALF+LENGTH)/2 )
+								if (sqrt(dogface_X*dogface_X + dogface_Y*dogface_Y) <= (HALF + LENGTH) / 2)
 								{
 									enemy[b]->fire = true;//天女散花击中别的小卒，该小卒被引爆
 								}
@@ -223,13 +224,15 @@ void Game::FunState8()
 					double bx = my->horizonTop - obstacle[i]->horizon, by = my->verticalTop - obstacle[i]->vertical;
 					if (sqrt(bx*bx + by*by) < obstacle[20 + i]->horizon)
 					{
-						my->HP -= 5;
+						/*my->HP -= 5;*/
+						text = L"您被狂轰滥炸炸死，游戏失败！";
+						goto fail;
 					}
 					obstacle[20 + i]->horizon += BOOMSPEED; //这个是爆炸半径扩张的速度
 					SelectObject(bufDc, enemyDirection0[2]);
-					TransparentBlt(mDc, obstacle[i]->horizon - obstacle[20 + i]->horizon, 
-						obstacle[i]->vertical- obstacle[20 + i]->horizon, 
-						obstacle[20 + i]->horizon*2, obstacle[20 + i]->horizon*2,
+					TransparentBlt(mDc, obstacle[i]->horizon - obstacle[20 + i]->horizon,
+						obstacle[i]->vertical - obstacle[20 + i]->horizon,
+						obstacle[20 + i]->horizon * 2, obstacle[20 + i]->horizon * 2,
 						bufDc, 0, 0, LENGTH, LENGTH, RGB(0, 0, 0));
 
 					if (obstacle[20 + i]->horizon >= BOOMRADIUS) //如果爆炸范围大于150，那么爆炸消失
@@ -237,7 +240,7 @@ void Game::FunState8()
 						delete obstacle[i];delete obstacle[20 + i];
 						obstacle[i] = NULL; obstacle[20 + i] = NULL;
 					}
-					
+
 					for (int ei = 1;ei < 12;ei++)//这是检测爆炸是否炸到小卒，若是则激活小卒的狂暴状态
 					{
 						if (enemy[ei] != NULL && obstacle[i] != NULL)
@@ -256,173 +259,201 @@ void Game::FunState8()
 			}
 		}
 
-	    //这里的boss的处理
-		enemy[0]->speed++; //这里的speed代表BOSS的蓝量
-		if (enemy[0]->direction <= 3) 
+		//这里的boss的处理
+		if (enemy[0]->HP > 0) //如果BOSS还活着
 		{
-			if (enemy[0]->speed > enemy[0]->HP ) //BOSS的CD已满，可以释放技能了
+			enemy[0]->speed++; //这里的speed代表BOSS的蓝量
+			if (enemy[0]->direction <= 3)
 			{
-				enemy[0]->speed = 0; //开始CD冷却时间
-
-				if (enemy[0]->direction == 0) //这里的direction代表BOSS的技能轮换（BOSS轮流释放技能），这里是小卒上吧的技能
+				if (enemy[0]->speed > enemy[0]->HP) //BOSS的CD已满，可以释放技能了
 				{
-					int count = 0;
-					for (int i = 1;i < 12;i++)
+					enemy[0]->speed = 0; //开始CD冷却时间
+
+					if (enemy[0]->direction == 0) //这里的direction代表BOSS的技能轮换（BOSS轮流释放技能），这里是小卒上吧的技能
 					{
-						if (enemy[i] == NULL)
+						int count = 0;
+						for (int i = 1;i < 12;i++)
 						{
-							if (count++ < 2)
-								enemy[i] = new Tank(enemy[0]->verticalTop, enemy[0]->horizonTop, 0, 1, 0, 0);
+							if (enemy[i] == NULL)
+							{
+								if (count++ < 2)
+									enemy[i] = new Tank(enemy[0]->verticalTop, enemy[0]->horizonTop, 0, 1, 0, 0);
+							}
 						}
+					}
+
+					else if (enemy[0]->direction == 1) //这里是狂轰滥炸的技能
+					{
+						obstacle[99]->vertical = 16 /*+ (1000 - enemy[0]->HP) / 200*/; //obstacle[99].vertical代表狂轰滥炸的陨石炸弹数量（BOSS血越少炸弹越多）
+						for (int i = 0;i < obstacle[99]->vertical;i++) //随机生成这些炸弹
+						{
+							if (obstacle[i] == NULL)
+							{
+								obstacle[i] = new Obstacle(rand() % HEIGHT, rand() % WIDTH, 0);
+								obstacle[20 + i] = new Obstacle(rand() % 70 + 70, 0, 0);
+							}
+						}
+					}
+					else if (enemy[0]->direction == 2)//这里是横冲蛮撞的技能更新
+					{
+						obstacle[98]->vertical = 1;//这个从1到150，表示横冲蛮撞技能的持续时长
+						obstacle[98]->horizon = 10;//这个表示横冲蛮撞技能的移动速度（总速度）
+						obstacle[97]->horizon = 1; //这个用来表示BOSS横冲蛮撞时刀枪不入
+					}
+
+					enemy[0]->direction++; //更换下一个技能
+				}
+				if (obstacle[98]->vertical > 0)
+				{
+					enemy[0]->speed = 0;
+					obstacle[98]->vertical++;
+
+					obstacle[50]->vertical = enemy[0]->verticalTop; //首先设置第一个紧跟后面的影子的垂直值
+					obstacle[50]->horizon = enemy[0]->horizonTop;   //再设置第一个幻影的水平值
+					for (int i = 69;i > 50;i--)
+					{
+						if (i > 50 && i < 69)
+						{
+							if (obstacle[i]->horizon > 0 && obstacle[i]->vertical > 0)
+							{
+								SelectObject(bufDc, mass);
+								TransparentBlt(mDc, obstacle[i]->horizon - BOSSWIDTH, obstacle[i]->vertical - BOSSHEIGHT,
+									BOSSWIDTH * 2, BOSSHEIGHT * 2, bufDc, 0, 0, BOSSWIDTH * 2, BOSSHEIGHT * 2,
+									RGB(0, 0, 0));
+							}
+							obstacle[i]->horizon = obstacle[i - 1]->horizon;
+							obstacle[i]->vertical = obstacle[i - 1]->vertical;
+						}
+					}
+
+					//把这个放在上面的for选循环后很关键，不然会有不合理的幻影位置（上一次的）
+					if (obstacle[98]->vertical > 150) //BOSS横冲蛮撞技能释放完毕
+					{
+						for (int i = 50; i < 70;i++) //把所有的幻影放到千里之外（看不到）
+							obstacle[i]->vertical = -1000, obstacle[i]->horizon = -1000;
+
+						obstacle[98]->vertical = 0; obstacle[98]->horizon = 1; obstacle[97]->horizon = 0; 
 					}
 				}
 
-				else if (enemy[0]->direction == 1) //这里是狂轰滥炸的技能
+			BOSSSHIFT: //这里是BOSS的位移，随机位移，会斜着走
+				int bossx = 0, bossy = 0;
+				if (obstacle[98]->vertical >= 1) //如果BOSS处于横冲蛮撞状态
 				{
-					obstacle[99]->vertical = 16 /*+ (1000 - enemy[0]->HP) / 200*/; //obstacle[99].vertical代表狂轰滥炸的陨石炸弹数量（BOSS血越少炸弹越多）
-					for (int i = 0;i < obstacle[99]->vertical;i++) //随机生成这些炸弹
-					{
-						if (obstacle[i] == NULL)
-						{
-							obstacle[i] = new Obstacle(rand() % HEIGHT, rand() % WIDTH, 0);
-							obstacle[20 + i] = new Obstacle(rand() % 70 + 70, 0, 0);
-						}
-					}
+					int g, h;
+					if (rand() % 2 == 0) g = 1; //随机左右走
+					else g = -1;
+					if (rand() % 2 == 0) h = 1; //随机上下走
+					else h = -1;
+					bossx = rand() % obstacle[98]->horizon; //随机获取水平移动速度
+					bossy = obstacle[98]->horizon - bossx;  //总速度恒定，垂直移动速度就是减去水平移动速度
+					bossx *= g, bossy *= h; //合成BOSS的横冲蛮撞技能速度
 				}
-				else if (enemy[0]->direction == 2)//这里是横冲蛮撞的技能更新
+				else  //BOSS正常移动
 				{
-					obstacle[98]->vertical = 1;
-					obstacle[98]->horizon = 10;
+					bossx = (rand() % 3) - 1;
+					bossy = (rand() % 3) - 1;
 				}
 
-				enemy[0]->direction++; //更换下一个技能
+				if (enemy[0]->verticalTop + bossy < 0 || enemy[0]->horizonTop + bossx < 0 || //检测BOSS是否会飞出界外
+					enemy[0]->horizonTop + bossx > WIDTH || enemy[0]->verticalTop + bossy > HEIGHT) //若是，则归位重新移动
+					goto BOSSSHIFT;
+				enemy[0]->verticalTop += bossy; //不然就这样移动吧
+				enemy[0]->horizonTop += bossx;
+
+				SelectObject(bufDc, mass);
+				TransparentBlt(mDc, enemy[0]->horizonTop - BOSSWIDTH, enemy[0]->verticalTop - BOSSHEIGHT,
+					BOSSWIDTH * 2, BOSSHEIGHT * 2, bufDc, 0, 0, BOSSWIDTH * 2, BOSSHEIGHT * 2,
+					RGB(0, 0, 0));
+
 			}
-			if (obstacle[98]->vertical > 0)
+			else  //BOSS终极技能的处理
 			{
+				if (obstacle[97]->horizon == 0) //这里初始化神出鬼没技能的水平速度和垂直速度
+				{
+					falx = x = enemy[0]->horizonTop; //BOSS假身的位置得到赋值
+					faly = y = enemy[0]->verticalTop; //以上两行用于将BOSS的水平垂直值赋给我们的全局变量
+					obstacle[96]->horizon = rand() % BOSSSPEED;
+					obstacle[96]->vertical = BOSSSPEED - obstacle[96]->horizon;
+					if (rand() % 2 == 0)obstacle[96]->horizon = -obstacle[96]->horizon;
+					if (rand() % 2 == 0) obstacle[96]->vertical = -obstacle[96]->vertical;
+					xs = double(obstacle[96]->horizon) / 100.00;
+					ys = double(obstacle[96]->vertical) / 100.00;
+					obstacle[97]->horizon = 4; //这个代表BOSS神出鬼没的最多碰壁次数（3次）
+					obstacle[97]->vertical = SSS;
+				}
+				else if (obstacle[97]->horizon == 1)
+				{
+					obstacle[97]->horizon = 0;
+					enemy[0]->direction = 0;
+					xs = 0.0;ys = 0.0;
+				}
+				x += xs; //更新（移动）水平位置
+				y += ys; //同上，垂直位置
+
+				if (x > WIDTH || x < 0)//BOSS在神出鬼没碰壁时的处理
+				{
+					xs = -xs;
+					x += xs;
+					obstacle[97]->horizon--;
+				}
+				if (y > HEIGHT || y < 0)//同上
+				{
+					ys = -ys;
+					y += ys;
+					obstacle[97]->horizon--;
+				}
+
+				enemy[0]->horizonTop = x; //更新BOSS的水平位置
+				enemy[0]->verticalTop = y; //更新BOSS的垂直位置
+
+										   //以下这两句代码用于测试boss的终极技能（不让它真隐形）运动轨道是否靠谱，好了就删掉
+				SelectObject(bufDc, mass);
+				TransparentBlt(mDc, enemy[0]->horizonTop - BOSSWIDTH, enemy[0]->verticalTop - BOSSHEIGHT,
+					BOSSWIDTH * 2, BOSSHEIGHT * 2, bufDc, 0, 0, BOSSWIDTH * 2, BOSSHEIGHT * 2,
+					RGB(0, 0, 0));
+
+				//以下两句代码用于给BOSS的假身贴图
+				SelectObject(bufDc, mass);
+				TransparentBlt(mDc, falx - BOSSWIDTH, faly - BOSSHEIGHT,
+					BOSSWIDTH * 2, BOSSHEIGHT * 2, bufDc, 0, 0, BOSSWIDTH * 2, BOSSHEIGHT * 2,
+					RGB(0, 0, 0));
+
+				xs *= double(obstacle[97]->vertical) / SSS;
+				ys *= double(obstacle[97]->vertical) / SSS;
+				obstacle[97]->vertical++;
 				enemy[0]->speed = 0;
-				obstacle[98]->vertical++;
-
-				obstacle[50]->vertical = enemy[0]->verticalTop; //首先设置第一个紧跟后面的影子的垂直值
-				obstacle[50]->horizon = enemy[0]->horizonTop;   //再设置第一个幻影的水平值
-				for (int i = 69;i > 50;i--)
-				{
-					if (i > 50 && i < 69) 
-					{
-						if (obstacle[i]->horizon > 0 && obstacle[i]->vertical > 0)
-						{
-							SelectObject(bufDc, mass);
-							TransparentBlt(mDc, obstacle[i]->horizon - BOSSWIDTH, obstacle[i]->vertical - BOSSHEIGHT,
-								BOSSWIDTH * 2, BOSSHEIGHT * 2, bufDc, 0, 0, BOSSWIDTH * 2, BOSSHEIGHT * 2,
-								RGB(255, 255, 255));
-						}
-						obstacle[i]->horizon = obstacle[i - 1]->horizon;
-						obstacle[i]->vertical = obstacle[i - 1]->vertical;
-					}
-				}
-				if (obstacle[98]->vertical > 150) //把这个放在上面的for选循环后很关键，不然会有不合理的幻影位置（上一次的）
-				{
-					for (int i = 50; i < 70;i++)
-						obstacle[i]->vertical = -1000, obstacle[i]->horizon = -1000;
-
-					obstacle[98]->vertical = 0; obstacle[98]->horizon = 1;
-				}
 			}
-		
-		BOSSSHIFT: //这里是BOSS的位移，随机位移，会斜着走
-			int bossx=0, bossy=0; 
-			if (obstacle[98]->vertical >= 1) //如果BOSS处于横冲蛮撞状态
-			{
-				int g, h;
-				if (rand() % 2 == 0) g = 1; //随机左右走
-				else g = -1;
-				if (rand() % 2 == 0) h = 1; //随机上下走
-				else h = -1;
-				bossx = rand() % obstacle[98]->horizon; //随机获取水平移动速度
-				bossy = obstacle[98]->horizon - bossx;  //总速度恒定，垂直移动速度就是减去水平移动速度
-				bossx *= g, bossy *= h; //合成BOSS的横冲蛮撞技能速度
-			}
-			else  //BOSS正常移动
-			{
-				bossx = (rand() % 3) - 1;
-				bossy = (rand() % 3) - 1;
-			}
-
-            if (enemy[0]->verticalTop + bossy < 0 || enemy[0]->horizonTop+bossx < 0 || //检测BOSS是否会飞出界外
-				enemy[0]->horizonTop+bossx > WIDTH || enemy[0]->verticalTop+bossy > HEIGHT) //若是，则归位重新移动
-				goto BOSSSHIFT;
-			enemy[0]->verticalTop += bossy; //不然就这样移动吧
-			enemy[0]->horizonTop += bossx;
-			;
-
-			SelectObject(bufDc, mass);
-			TransparentBlt(mDc, enemy[0]->horizonTop - BOSSWIDTH, enemy[0]->verticalTop - BOSSHEIGHT,
-				BOSSWIDTH * 2, BOSSHEIGHT * 2, bufDc, 0, 0, BOSSWIDTH * 2, BOSSHEIGHT * 2,
-				RGB(255, 255, 255));
-
 		}
-		else  //BOSS终极技能的处理
+		else //BOSS血量空了，该自爆了
 		{
-			if (obstacle[97]->horizon == 0) //这里初始化神出鬼没技能的水平速度和垂直速度
+			enemy[0]->HP--;
+			if (enemy[0]->HP <= -800)
 			{
-				falx = x = enemy[0]->horizonTop; //BOSS假身的位置得到赋值
-				faly = y = enemy[0]->verticalTop; //以上两行用于将BOSS的水平垂直值赋给我们的全局变量
-				obstacle[96]->horizon = rand() % BOSSSPEED;
-				obstacle[96]->vertical = BOSSSPEED - obstacle[96]->horizon;
-				if (rand() % 2 == 0)obstacle[96]->horizon = -obstacle[96]->horizon;
-				if (rand() % 2 == 0) obstacle[96]->vertical = -obstacle[96]->vertical;
-				xs = double(obstacle[96]->horizon) / 100.00;
-				ys = double(obstacle[96]->vertical) / 100.00;
-   				obstacle[97]->horizon = 4; //这个代表BOSS神出鬼没的最多碰壁次数（3次）
-				obstacle[97]->vertical = SSS;
+      				text = L"BOSS阵亡，恭喜您通关！";
+	     			goto win;
 			}
-			else if (obstacle[97]->horizon == 1)
+			if ((-enemy[0]->HP) % 2 == 0) //不能让它乱炸的那么快
 			{
-				obstacle[97]->horizon = 0;
-				enemy[0]->direction = 0;
-				xs = 0.0;ys = 0.0;
+				//还是rand函数的老问题，相近时间随机几乎无差异，所以必须要用变化着的BOSS血量了
+				sparkX = enemy[0]->horizonTop - BOSSWIDTH + (((-enemy[0]->HP) * rand()) % (BOSSWIDTH * 2));
+				sparkY = enemy[0]->verticalTop - BOSSWIDTH + (((-enemy[0]->HP) * rand()) % (BOSSWIDTH * 2));
 			}
-			x += xs; //更新（移动）水平位置
-			y += ys; //同上，垂直位置
-
-			if (x > WIDTH || x < 0)//BOSS在神出鬼没碰壁时的处理
-			{
-				xs = -xs;
-				x += xs;
-				obstacle[97]->horizon--;
-			}
-			if (y > HEIGHT || y < 0)//同上
-			{
-				ys = -ys;
-				y += ys;
-				obstacle[97]->horizon--;
-			}
-
-			enemy[0]->horizonTop = x; //更新BOSS的水平位置
-			enemy[0]->verticalTop = y; //更新BOSS的垂直位置
-			
-			//以下这两句代码用于测试boss的终极技能（不让它真隐形）运动轨道是否靠谱，好了就删掉
-			SelectObject(bufDc, mass);
+			SelectObject(bufDc, mass);//贴上BOSS图
 			TransparentBlt(mDc, enemy[0]->horizonTop - BOSSWIDTH, enemy[0]->verticalTop - BOSSHEIGHT,
 				BOSSWIDTH * 2, BOSSHEIGHT * 2, bufDc, 0, 0, BOSSWIDTH * 2, BOSSHEIGHT * 2,
-				RGB(255, 255, 255));
-
-			//以下两句代码用于给BOSS的假身贴图
-			SelectObject(bufDc, mass);
-			TransparentBlt(mDc, falx - BOSSWIDTH, faly - BOSSHEIGHT,
-				BOSSWIDTH * 2, BOSSHEIGHT * 2, bufDc, 0, 0, BOSSWIDTH * 2, BOSSHEIGHT * 2,
-				RGB(255, 255, 255));
-
-			xs *= double(obstacle[97]->vertical)/SSS;
-			ys *= double(obstacle[97]->vertical)/SSS;
-  			obstacle[97]->vertical++;
-			enemy[0]->speed = 0;
+				RGB(0, 0, 0));
+   			SelectObject(bufDc, enemyDirection0[2]);//这里贴上自爆效果图
+  			TransparentBlt(mDc, sparkX - SPU / 2, sparkY - SPU / 2, SPU, SPU,
+				bufDc, 0, 0, LENGTH, LENGTH, RGB(0, 0, 0));
+			
 		}
 		//到这里BOSS所有的处理完毕
 
-		SelectObject(bufDc, enemyDirection0[2]);
-		TransparentBlt(mDc, sparkX-10, sparkY-10, 20, 20,
+		SelectObject(bufDc, enemyDirection0[2]); //这两行代码用于给溅射贴图
+		TransparentBlt(mDc, sparkX - SPU/2, sparkY - SPU/2, SPU, SPU,
 			bufDc, 0, 0, LENGTH, LENGTH, RGB(0, 0, 0));
-		BitBlt(hDc, 0, 0, WIDTH, HEIGHT+20, mDc, 0, 0, SRCCOPY);
+		BitBlt(hDc, 0, 0, WIDTH, HEIGHT + 20, mDc, 0, 0, SRCCOPY);
 
 		if (my->fire == true) //检测玩家是否开火
 		{
@@ -441,7 +472,7 @@ void Game::FunState8()
 					sparkX = my->horizonTop;
 					sparkY = ey = enemy[0]->verticalTop + BOSSHEIGHT;
 					//这句代码留着给BOSS减血量
-					if (obstacle[97]->horizon == 0)
+					if (obstacle[97]->horizon == 0 && enemy[0]->HP >0)
 						enemy[0]->HP -= POWER;
 					////这句代码给BOSS减蓝量
 					//enemy[0]->speed--;
@@ -471,7 +502,7 @@ void Game::FunState8()
 					sparkY = my->verticalTop;
 					sparkX = ex = enemy[0]->horizonTop - BOSSHEIGHT;
 					//这句代码留着给BOSS减血量
-					if (obstacle[97]->horizon == 0)
+					if (obstacle[97]->horizon == 0 && enemy[0]->HP >0)
 						enemy[0]->HP -= POWER;
 					////这句代码给BOSS减蓝量
 					//enemy[0]->speed--;
@@ -501,7 +532,7 @@ void Game::FunState8()
 					sparkX = my->horizonTop;
 					sparkY = ey = enemy[0]->verticalTop - BOSSHEIGHT;
 					//这句代码留着给BOSS减血量
-					if (obstacle[97]->horizon == 0)
+					if (obstacle[97]->horizon == 0 && enemy[0]->HP >0)
 						enemy[0]->HP -= POWER;
 					////这句代码给BOSS减蓝量
 					//enemy[0]->speed--;
@@ -531,7 +562,7 @@ void Game::FunState8()
 					sparkY = my->verticalTop;
 					sparkX = ex = enemy[0]->horizonTop + BOSSHEIGHT;
 					//这句代码留着给BOSS减血量
-					if (obstacle[97]->horizon == 0)
+					if (obstacle[97]->horizon == 0 && enemy[0]->HP >0)
 						enemy[0]->HP -= POWER;
 					////这句代码给BOSS减蓝量
 					//enemy[0]->speed--;
@@ -557,13 +588,13 @@ void Game::FunState8()
 			MoveToEx(hDc, sx, sy, 0);
 			LineTo(hDc, ex, ey);
 			SelectObject(hDc, old11);
-			DeleteObject(hpen11);					   	
+			DeleteObject(hpen11);
 		}
 
 		HPEN hpen = CreatePen(PS_SOLID, 10, RGB(255, 10, 0));
 		HPEN old = (HPEN)SelectObject(hDc, hpen);
-		MoveToEx(hDc, 0, HEIGHT+10, 0);
-		LineTo(hDc, enemy[0]->HP, HEIGHT+10); //这几行代码用于画BOSS生命值
+		MoveToEx(hDc, 0, HEIGHT + 10, 0);
+		LineTo(hDc, enemy[0]->HP, HEIGHT + 10); //这几行代码用于画BOSS生命值
 		SelectObject(hDc, old);
 		DeleteObject(hpen);
 
