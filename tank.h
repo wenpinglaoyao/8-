@@ -1,3 +1,22 @@
+#pragma once
+#pragma once
+#define LENGTH 50
+class Tank {
+public:
+	Tank(int vertical, int horizon, int hp, int dircetion, int speed, bool fire);
+	~Tank();
+
+	int Hurt(int, int, int);
+	bool BeCollide(int vertical, int horizon);
+
+
+public:
+	int  HP; //这个表示坦克的生命值
+	int verticalTop, horizonTop; //第一个是坦克的垂直量，第二个是坦克的水平量，两者合起来表示坦克的位置
+	int direction, speed; //第一个是坦克当前的面朝哪里，第二个表示坦克行走的速度
+	bool fire; //开火权限
+};
+
 class Bullet
 {
 public:
