@@ -1,5 +1,6 @@
-//惊弓之鸟（别忘了把敌人碰壁的转向改成随机的，方便同转胜好杀）
+//惊弓之鸟
 #include "Game.h"
+#define TASKNUM 20
 #define ALL 4
 #define CD 150 //复生敌人的无敌时间，要减去100
 
@@ -123,7 +124,7 @@ void Game::FunState5()
 			{
 				delete myBullet;
 				myBullet = NULL;
-			} 
+			}
 			else switch (myBullet->direction)//让炮弹飞
 			{
 			case 0: myBullet->verticalTop -= myBullet->speed; break;
@@ -145,7 +146,7 @@ void Game::FunState5()
 							delete enemyBullet[i];
 							enemyBullet[i] = NULL;
 						}
-						if (enemyCount < 12) 
+						if (enemyCount < TASKNUM  - ALL)
 						{
 							int x, y;bool flag;
 						start:
@@ -161,7 +162,7 @@ void Game::FunState5()
 							for (int i = 0;i < 100;i++) //最后检测是否和障碍物重合
 								if (obstacle[i] != NULL && obstacle[i]->BeCollide(y, x) == true)
 									flag = false;
-							if (flag == true) 
+							if (flag == true)
 							{
 								obstacle[enemyCount] = new Obstacle(enemy[i]->verticalTop, enemy[i]->horizonTop, 0);//敌人被冻住
 								enemyCount++;//障碍物+1
@@ -171,26 +172,27 @@ void Game::FunState5()
 							}
 							else goto start;
 						}
-						else 
+						else
 						{
 							obstacle[enemyCount] = new Obstacle(enemy[i]->verticalTop, enemy[i]->horizonTop, 0);//敌人被冻住
-							enemyCount++;//手机资料+1
+							enemyCount++;//资料+1
 
 							delete enemy[i];
 							enemy[i] = NULL;
 						}
 
-						if (enemyCount >= 30) //这里是过关任务的数量
+						if (enemyCount >= TASKNUM) //这里是过关任务的数量
 						{
-							text = L"正在搜集全部资料，恭喜您过关！";
+							text = L"正在搜集全部资料！BGM:魂斗罗第2关；下一关：铁皮球王";
 							goto win;
 						}
 					}
 				}
 			}
 		}
-		
+
 		/////////////////我们改动到这里了！！！！该敌人行动了///////////////////
+		swervetime+=3;
 		for (int i = 0;i < ALL; i++)
 		{
 			if (enemy[i] != NULL)
@@ -201,16 +203,16 @@ void Game::FunState5()
 				{
 					SelectObject(bufDc, backGround);
 					TransparentBlt(mDc, enemy[i]->horizonTop, enemy[i]->verticalTop,
-						LENGTH, LENGTH,bufDc, 0, 0, LENGTH, LENGTH, RGB(11, 11, 11));
+						LENGTH, LENGTH, bufDc, 0, 0, LENGTH, LENGTH, RGB(11, 11, 11));
 					BitBlt(hDc, 0, 0, WIDTH, HEIGHT, mDc, 0, 0, SRCCOPY);
 				}
 
-				if (++swervetime >= SWERVETIME) //冷却时间完毕，敌人也许该转弯了
+				if (swervetime >= SWERVETIME) //冷却时间完毕，敌人也许该转弯了
 				{
 					swervetime = 0;
 					for (int i = 0;i < ALL; i++)
 					{
-						if (rand() % 3 == 0)
+						if (enemy[i]!=NULL && rand() % 3 == 0)
 						{
 							enemy[i]->direction = rand() % 4;
 						}
@@ -228,7 +230,7 @@ void Game::FunState5()
 							enemy[i]->verticalTop += enemy[i]->speed; //如果碰撞了就把这个电脑坦克设为原先的位置
 							++enemy[i]->direction %= 4;
 						}
-							
+
 
 
 						for (int j = 0;j < ALL;j++) //这里检测电脑坦克是否自己碰撞到自己人
@@ -290,7 +292,7 @@ void Game::FunState5()
 							}
 						}
 					}
-					else 
+					else
 					{
 						enemy[i]->direction = (enemy[i]->direction + 2) % 4;
 						//enemy[i]->HP = CD; //敌人转向后开启保护圈
@@ -328,7 +330,7 @@ void Game::FunState5()
 							}
 						}
 					}
-					else 
+					else
 					{
 						enemy[i]->direction = (enemy[i]->direction + 2) % 4;
 						//enemy[i]->HP = CD; //敌人转向后开启保护圈
@@ -366,7 +368,7 @@ void Game::FunState5()
 							}
 						}
 					}
-					else 
+					else
 					{
 						enemy[i]->direction = (enemy[i]->direction + 2) % 4;
 						//enemy[i]->HP = CD; //敌人转向后开启保护圈
@@ -382,17 +384,17 @@ void Game::FunState5()
 			{
 				for (int j = 0;j < ALL;j++)
 				{
-					if (j != i && enemy[j] != NULL && enemy[j]->HP<=100
-						&& enemy[j]->Hurt(enemyBullet[i]->verticalTop + LENGTH / 2, enemyBullet[i]->horizonTop + LENGTH / 2,enemyBullet[i]->power))
+					if (j != i && enemy[j] != NULL && enemy[j]->HP <= 100
+						&& enemy[j]->Hurt(enemyBullet[i]->verticalTop + LENGTH / 2, enemyBullet[i]->horizonTop + LENGTH / 2, enemyBullet[i]->power))
 					{
-						text = L"动着的资料被摧毁，无法拼凑完全，挑战失败!";
+						text = L"一份资料被摧毁，无法拼凑完全，挑战失败!";
 						goto fail;
 					}
 				}
 				for (int j = 0;j < 100;j++)
 				{
 					if (j != i && obstacle[j] != NULL
-						&& obstacle[j]->Hurt(enemyBullet[i]->verticalTop + LENGTH / 2, enemyBullet[i]->horizonTop + LENGTH / 2) )
+						&& obstacle[j]->Hurt(enemyBullet[i]->verticalTop + LENGTH / 2, enemyBullet[i]->horizonTop + LENGTH / 2))
 					{
 						text = L"一份资料被摧毁，无法拼凑完全，挑战失败!";
 						goto fail;
@@ -453,7 +455,7 @@ void Game::FunState5()
 	HPEN hpen = CreatePen(PS_SOLID, 10, RGB(255, 10, 0));
 	HPEN old = (HPEN)SelectObject(hDc, hpen);
 	MoveToEx(hDc, 0, HEIGHT - 10, 0);
-	LineTo(hDc, swervetime, HEIGHT - 10); //这几行代码用于画BOSS生命值
+	LineTo(hDc, swervetime, HEIGHT - 10); //这几行代码用于画转弯条
 	SelectObject(hDc, old);
 	DeleteObject(hpen);
 	return;
@@ -462,17 +464,15 @@ win:
 	level++;
 	;
 fail:
-	HFONT hFont = CreateFont(40, 0, 0, 0, 0, 0, 0, 0, GB2312_CHARSET, 0, 0, 0, 0, L"微软雅黑");
+	HFONT hFont = CreateFont(30, 0, 0, 0, 0, 0, 0, 0, GB2312_CHARSET, 0, 0, 0, 0, L"微软雅黑");
 	SelectObject(hDc, hFont);
 	SetBkMode(hDc, TRANSPARENT);
-	SetTextColor(hDc, RGB(255, 255, 255));
+	SetTextColor(hDc, RGB(255, 0, 255));
 	TextOut(hDc, 0, 0, text, wcslen(text));
 	DeleteObject(hFont);
 	gameOver = 1;
-	/*level++;*/
 	delete my;
 	my = NULL;
-
 }
 bool Game::InitLevel5()
 {
@@ -504,18 +504,25 @@ bool Game::InitLevel5()
 		}
 	}
 
-	obbmp = (HBITMAP)LoadImage(NULL, L"image\\ice.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);
+	obbmp = (HBITMAP)LoadImage(NULL, L"image\\ice.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);//读取敌人被冻结后的图像
+	backGround = (HBITMAP)LoadImage(NULL, L"image\\backGround1.bmp", IMAGE_BITMAP, WIDTH, HEIGHT, LR_LOADFROMFILE); //读取这关游戏背景图
+	//以下四行读取这关敌人图像
+	enemyDirection0[0] = (HBITMAP)LoadImage(NULL, L"image\\5up.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);
+	enemyDirection0[1] = (HBITMAP)LoadImage(NULL, L"image\\5right.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);
+	enemyDirection0[2] = (HBITMAP)LoadImage(NULL, L"image\\5down.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);
+	enemyDirection0[3] = (HBITMAP)LoadImage(NULL, L"image\\5left.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);
 
 	speedTemp = 6;
 	enemyCount = 0;
 	my = new Tank(100, 0, 0, 2, 0, false);
 	for (int i = 0; i < ALL; i++) //这里是初始化敌军位置和状态
 	{
-		enemy[i] = new Tank((i + 3)* LENGTH, (i + 3) * LENGTH, i%4, 1, 100, true);
+		enemy[i] = new Tank((i + 3)* LENGTH, (i + 3) * LENGTH, i % 4, 1, 100, true);
 	}
 
 	myBullet = NULL;
 	int count = 0;
 	gameOver = 0;
+	PlaySound(L"music\\5.wav", NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
 	return false;
 }
