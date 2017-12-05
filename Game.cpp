@@ -10,22 +10,16 @@ Game::Game(HWND hWnd)
 	bmp = CreateCompatibleBitmap(hDc, 1000, 1000);//建一个和窗口兼容的空位图对象
 	SelectObject(mDc, bmp); //将空位图对象放到mDc中
 
-	backGround = (HBITMAP)LoadImage(NULL, L"image\\backGround.bmp", IMAGE_BITMAP, WIDTH, HEIGHT, LR_LOADFROMFILE); //读取游戏主背景图
-	myDirection[0] = (HBITMAP)LoadImage(NULL, L"image\\s.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);  //读取坦克往上走的素材图
-	myDirection[1] = (HBITMAP)LoadImage(NULL, L"image\\y.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);  //。。。向右走。。。
-	myDirection[2] = (HBITMAP)LoadImage(NULL, L"image\\x.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);  //。。。向下走。。。
-	myDirection[3] = (HBITMAP)LoadImage(NULL, L"image\\z.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);  //。。。向左走。。。
+	myDirection[0] = (HBITMAP)LoadImage(NULL, L"image\\0up.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);  //读取坦克往上走的素材图
+	myDirection[1] = (HBITMAP)LoadImage(NULL, L"image\\0right.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);  //。。。向右走。。。
+	myDirection[2] = (HBITMAP)LoadImage(NULL, L"image\\0down.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);  //。。。向下走。。。
+	myDirection[3] = (HBITMAP)LoadImage(NULL, L"image\\0left.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);  //。。。向左走。。。
 
-	enemyDirection0[0] = (HBITMAP)LoadImage(NULL, L"image\\0up.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE); //敌方坦克素材图的读取，下面一样
-	enemyDirection0[1] = (HBITMAP)LoadImage(NULL, L"image\\0right.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);
-	enemyDirection0[2] = (HBITMAP)LoadImage(NULL, L"image\\0down.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);
-	enemyDirection0[3] = (HBITMAP)LoadImage(NULL, L"image\\0left.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);
 
 	bullet = (HBITMAP)LoadImage(NULL, L"image\\子弹.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE); //子弹素材图的读取
 	obbmp = (HBITMAP)LoadImage(NULL, L"image\\墙.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);  //障碍物素材图的读取
-	level = 1;
+	level = 0;
 	gameOver = 1;
-	/*enemyCount = 5;*/
 	my = new Tank(0, 0, 0, 6, 100, false);
 	myBullet = NULL;
 	for (int i = 0; i < 12; i++) enemy[i] = NULL;  //敌人初始化为空
@@ -72,7 +66,7 @@ void Game::GamePaint() //大部分的关卡游戏画面绘制
 		{
 			SelectObject(bufDc, bullet);
 			TransparentBlt(mDc, myBullet->horizonTop, myBullet->verticalTop, LENGTH, LENGTH,
-				bufDc, 0, 0,LENGTH,LENGTH, RGB(0, 0, 0));
+				bufDc, 0, 0, LENGTH, LENGTH, RGB(0, 0, 0));
 		}
 
 		for (int i = 0;i < 12;i++) //贴上敌人的坦克图
@@ -104,7 +98,7 @@ void Game::GamePaint() //大部分的关卡游戏画面绘制
 					LENGTH, LENGTH, bufDc, 0, 0, LENGTH, LENGTH, RGB(0, 0, 0));
 			}
 		}
-		BitBlt(hDc, 0, 0, WIDTH, HEIGHT, mDc, 0, 0, SRCCOPY); 
+		BitBlt(hDc, 0, 0, WIDTH, HEIGHT, mDc, 0, 0, SRCCOPY);
 	}
 	timePre = GetTickCount(); //获取当前时间
 }
@@ -113,12 +107,20 @@ void Game::GamePaint() //大部分的关卡游戏画面绘制
 
 void Game::FunState0()
 {
+	text = L"欢迎您玩游戏，按下Tab进入第一关：修罗之主";
+	HFONT hFont = CreateFont(40, 0, 0, 0, 0, 0, 0, 0, GB2312_CHARSET, 0, 0, 0, 0, L"微软雅黑");
+	SelectObject(hDc, hFont);
+	SetBkMode(hDc, TRANSPARENT);
+	SetTextColor(hDc, RGB(255, 0, 0));
+	TextOut(hDc, 0, 0, text, wcslen(text));
+	DeleteObject(hFont);
+	level++;
 	return;
 }
 void Game::FunState1()
 {
 	srand((unsigned)(time)(NULL));
-	if (my != NULL && gameOver != 1) 
+	if (my != NULL && gameOver != 1)
 	{
 		switch (my->direction)
 		{
@@ -291,7 +293,7 @@ void Game::FunState1()
 		{
 			if (enemy[i] != NULL)
 			{
-				if (rand() % 4 == 1)
+				if (rand() % 6 == 1)
 				{
 					enemy[i]->direction = rand() % 4;
 				}
@@ -303,7 +305,7 @@ void Game::FunState1()
 						enemy[i]->verticalTop -= enemy[i]->speed;
 						if (my->BeCollide(enemy[i]->verticalTop, enemy[i]->horizonTop) == true) //接下来检测是否碰撞了我方坦克
 							enemy[i]->verticalTop += enemy[i]->speed; //如果碰撞了就把这个电脑坦克设为原先的位置
-						
+
 
 						for (int j = 0;j < 6;j++) //这里检测电脑坦克是否自己碰撞到自己人
 						{
@@ -316,15 +318,15 @@ void Game::FunState1()
 						}
 						for (int j = 0;j < 100;j++) //这里检测电脑坦克是否撞壁
 						{
-							if (enemy[i] != NULL&&obstacle[j]!=NULL && enemy[i]->BeCollide(obstacle[j]->vertical, obstacle[j]->horizon) == true)
+							if (enemy[i] != NULL&&obstacle[j] != NULL && enemy[i]->BeCollide(obstacle[j]->vertical, obstacle[j]->horizon) == true)
 							{
 								enemy[i]->verticalTop += enemy[i]->speed;
-								enemy[i]->direction = (enemy[i]->direction+2) % 4;
+								enemy[i]->direction = (enemy[i]->direction + 2) % 4;
 								break;
 							}
 						}
 						/*************以下检测敌方坦克是否该向上开火*****************/
-						if ( enemyBullet[i] == NULL)
+						if (enemyBullet[i] == NULL)
 						{
 							enemyBullet[i] = new Bullet(enemy[i]->verticalTop - LENGTH - 1, enemy[i]->horizonTop, 3, 0, 100);
 							enemyBuCnt++;
@@ -360,7 +362,7 @@ void Game::FunState1()
 							}
 						}
 						/*************以下是敌人向右检测是否该开火******************/
-						if ( enemyBullet[i] == NULL)
+						if (enemyBullet[i] == NULL)
 						{
 							enemyBullet[i] = new Bullet(enemy[i]->verticalTop, enemy[i]->horizonTop + LENGTH + 1, 3, 1, 100);
 							enemyBuCnt++;
@@ -472,7 +474,7 @@ void Game::FunState1()
 
 				case 3:
 					enemyBullet[i]->horizonTop -= enemyBullet[i]->speed;
-					if (enemyBullet[i]->horizonTop < 0){
+					if (enemyBullet[i]->horizonTop < 0) {
 						text = L"敌人炮弹击中围观者，挑战失败！";
 						goto fail;
 					}
@@ -503,25 +505,24 @@ void Game::FunState1()
 			}
 		} //在这里炮弹的移动和碰撞检测完毕
 	}
-	if (enemyCount >= 20) 
+	if (enemyCount >= 20)
 	{
-		text = L"恭喜您过关，按下TAB进入下一关";
+		text = L"恭喜您从擂台赛中脱颖而出！BGM：功夫；下一关：枪林弹雨";
 		goto win;
 	}
-	
+
 	GamePaint();
 	return;
 win:
 	level++;
 fail:
-	HFONT hFont = CreateFont(80, 0, 0, 0, 0, 0, 0, 0, GB2312_CHARSET, 0, 0, 0, 0, L"微软雅黑");
+	HFONT hFont = CreateFont(30, 0, 0, 0, 0, 0, 0, 0, GB2312_CHARSET, 0, 0, 0, 0, L"微软雅黑");
 	SelectObject(hDc, hFont);
 	SetBkMode(hDc, TRANSPARENT);
-	SetTextColor(hDc, RGB(255, 255, 255));
-	TextOut(hDc, 150, 200, text, wcslen(text));
+	SetTextColor(hDc, RGB(255, 0, 255));
+	TextOut(hDc, 0, 0, text, wcslen(text));
 	DeleteObject(hFont);
 	gameOver = 1;
-	/*level++;*/
 	delete my;
 	my = NULL;
 
@@ -566,7 +567,6 @@ bool Game::InitLevel1()
 		}
 	}
 	speedTemp = 8;enemyCount = 0;
-	backGround = (HBITMAP)::LoadImage(NULL, L"image\\第2关背景图.bmp", IMAGE_BITMAP, WIDTH, HEIGHT, LR_LOADFROMFILE);
 	my = new Tank(100, 100, 0, 4, 100, false);
 	for (int i = 0; i < 6; i++) //这里是初始化敌军位置和状态
 	{
@@ -579,6 +579,13 @@ bool Game::InitLevel1()
 	for (int i = LENGTH + 25;i < WIDTH - LENGTH - 25;i += LENGTH) obstacle[count++] = new Obstacle(HEIGHT - 75, i, 100);
 	for (int i = LENGTH + 25;i < HEIGHT - LENGTH - 25;i += LENGTH) obstacle[count++] = new Obstacle(i, 25, 100);
 	gameOver = 0;
+	backGround = (HBITMAP)LoadImage(NULL, L"image\\backGround.bmp", IMAGE_BITMAP, WIDTH, HEIGHT, LR_LOADFROMFILE); //读取这关游戏背景图
+    //以下四行读取这关敌人图像
+	enemyDirection0[0] = (HBITMAP)LoadImage(NULL, L"image\\1up.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE); 
+	enemyDirection0[1] = (HBITMAP)LoadImage(NULL, L"image\\1right.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);
+	enemyDirection0[2] = (HBITMAP)LoadImage(NULL, L"image\\1down.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);
+	enemyDirection0[3] = (HBITMAP)LoadImage(NULL, L"image\\1left.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);
+	PlaySound(L"music\\1.wav", NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
 	return false;
 }
 
