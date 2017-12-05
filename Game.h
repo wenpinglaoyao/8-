@@ -55,7 +55,7 @@ public:
 	int enemyCount; //这个用来记录敌人数量或者用来记录敌人被消灭数量
 	Bullet* myBullet; //这个是玩家的子弹，其实直觉告诉我，可以与下面的子弹对象数组合并在一起，但保险起见，还是单挑出来吧
 	Bullet* enemyBullet[12]; //这个是敌人的子弹，每次最多存在12颗敌人炮弹
-	int enemyBuCnt,speedTemp; //第一个是子弹数量，第二个是记录这一关的玩家坦克应该的速度，与空格键配合使用，方便复位玩家速度
+	int enemyBuCnt, speedTemp; //第一个是子弹数量，第二个是记录这一关的玩家坦克应该的速度，与空格键配合使用，方便复位玩家速度
 	Obstacle* obstacle[100]; //最多有100个障碍物
 	void(Game::*pFunState[10])(); //这个是函数指针，用它来指向不同的关卡更新函数，这样当我们玩到某一关时，就可以调用相应的函数
 	bool(Game::*pFunInitLevel[10])(); //与上面同理，不同的是指向关卡初始化函数
