@@ -1,3 +1,4 @@
+//王的沉默
 #include "Game.h"
 void Game::FunState4()
 {
@@ -14,8 +15,16 @@ void Game::FunState4()
 				{
 					if (enemy[i] != NULL && enemy[i]->BeCollide(my->verticalTop, my->horizonTop) == true)
 					{
-						my->verticalTop += my->speed; //如果撞到了，恢复位移前位置
-						break;
+						enemy[i]->verticalTop -= my->speed ;
+						my->verticalTop += my->speed;
+						for (int j = 0;j < 11;j++)
+						{
+							if (i != j && enemy[j] != NULL && enemy[j]->BeCollide(enemy[i]->verticalTop, enemy[i]->horizonTop) == true)
+							{
+								enemy[i]->verticalTop += my->speed ;
+								break;
+							}
+						}
 					}
 				}
 				for (int i = 0;i < 100;i++) //挨个测试是否会撞到墙壁
@@ -37,8 +46,16 @@ void Game::FunState4()
 				{
 					if (enemy[i] != NULL&&enemy[i]->BeCollide(my->verticalTop, my->horizonTop) == true)//挨个测试是否会撞到其它坦克
 					{
-						my->horizonTop -= my->speed; //如果撞到了，恢复位移前位置
-						break;
+						enemy[i]->horizonTop += my->speed ;
+						my->horizonTop -= my->speed;
+						for (int j = 0;j < 11;j++)
+						{
+							if (i != j && enemy[j] != NULL && enemy[j]->BeCollide(enemy[i]->verticalTop, enemy[i]->horizonTop) == true)
+							{
+								enemy[i]->horizonTop -= my->speed ;
+								break;
+							}
+						}
 					}
 				}
 				for (int i = 0;i < 100;i++) //挨个测试是否会撞到其它坦克
@@ -60,8 +77,16 @@ void Game::FunState4()
 				{
 					if (enemy[i] != NULL&&enemy[i]->BeCollide(my->verticalTop, my->horizonTop) == true)
 					{
-						my->verticalTop -= my->speed; //如果撞到了，恢复位移前位置
-						break;
+						enemy[i]->verticalTop += my->speed ;
+						my->verticalTop -= my->speed;
+						for (int j = 0;j < 11;j++)
+						{
+							if (i != j && enemy[j] != NULL && enemy[j]->BeCollide(enemy[i]->verticalTop, enemy[i]->horizonTop) == true)
+							{
+								enemy[i]->verticalTop -= my->speed ;
+								break;
+							}
+						}
 					}
 				}
 				for (int i = 0;i < 100;i++) //挨个测试是否会撞到其它坦克
@@ -83,11 +108,19 @@ void Game::FunState4()
 				{
 					if (enemy[i] != NULL&&enemy[i]->BeCollide(my->verticalTop, my->horizonTop) == true)
 					{
-						my->horizonTop += my->speed; //如果撞到了，恢复位移前位置
-						break;
+						enemy[i]->horizonTop -= my->speed ;
+						my->horizonTop += my->speed;
+						for (int j = 0;j < 11;j++)
+						{
+							if (i != j && enemy[j] != NULL && enemy[j]->BeCollide(enemy[i]->verticalTop, enemy[i]->horizonTop) == true)
+							{
+								enemy[i]->horizonTop += my->speed ;
+								break;
+							}
+						}
 					}
 				}
-				for (int i = 0;i < 100;i++) //挨个测试是否会撞到其它坦克
+				for (int i = 0;i < 100;i++) //挨个测试是否会撞到其它
 				{
 					if (obstacle[i] != NULL && my->BeCollide(obstacle[i]->vertical, obstacle[i]->horizon) == true)
 					{
@@ -124,7 +157,7 @@ void Game::FunState4()
 			{
 				delete myBullet;
 				myBullet = NULL;
-				text = L"你误杀了围观群众，失败！";
+				text = L"炮弹击中外网，惊醒敌人，挑战失败！";
 				goto fail;
 			}
 			else if (myBullet != NULL) {
@@ -155,15 +188,11 @@ void Game::FunState4()
 				}
 			}
 		}
-		/////////////////我们改动到这里了！！！！该下面了///////////////////
+		/////////////////我们改动到这里了！！！！该敌人了///////////////////
 		for (int i = 0;i < 11; i++)
 		{
 			if (enemy[i] != NULL && my->HP == 0)
 			{
-				/*if (rand() % 4 == 1)
-				{
-					enemy[i]->direction = rand() % 4;
-				}*/
 				switch (enemy[i]->direction)
 				{
 				case 0: //向上去
@@ -182,8 +211,6 @@ void Game::FunState4()
 							if (enemy[j] != NULL&&j != i && enemy[j]->BeCollide(enemy[i]->verticalTop, enemy[i]->horizonTop) == true)
 							{
 								enemy[i]->verticalTop += enemy[i]->speed;
-								enemy[i]->direction++;
-								enemy[i]->direction %= 4;
 								break;
 							}
 						}
@@ -192,17 +219,11 @@ void Game::FunState4()
 							if (enemy[i] != NULL&&obstacle[j] != NULL && enemy[i]->BeCollide(obstacle[j]->vertical, obstacle[j]->horizon) == true)
 							{
 								enemy[i]->verticalTop += enemy[i]->speed;
-								enemy[i]->direction+=2;
+								enemy[i]->direction += 2;
 								enemy[i]->direction %= 4;
 								break;
 							}
 						}
-						///*************以下检测敌方坦克是否该向上开火*****************/
-						//if (enemyBullet[i] == NULL)
-						//{
-						//	enemyBullet[i] = new Bullet(enemy[i]->verticalTop - LENGTH - 1, enemy[i]->horizonTop, 3, 0, 100);
-						//	enemyBuCnt++;
-						//}
 					}
 					else 	enemy[i]->direction = 2; //如果超越了边界，就把电脑方向按规则调整一下
 
@@ -224,8 +245,6 @@ void Game::FunState4()
 							if (enemy[j] != NULL&&j != i && enemy[j]->BeCollide(enemy[i]->verticalTop, enemy[i]->horizonTop) == true)
 							{
 								enemy[i]->horizonTop -= enemy[i]->speed;
-								enemy[i]->direction++;
-								enemy[i]->direction %= 4;
 								break;
 							}
 						}
@@ -259,8 +278,6 @@ void Game::FunState4()
 							if (enemy[j] != NULL&&j != i && enemy[j]->BeCollide(enemy[i]->verticalTop, enemy[i]->horizonTop) == true)
 							{
 								enemy[i]->verticalTop -= enemy[i]->speed;
-								enemy[i]->direction++;
-								enemy[i]->direction %= 4;
 								break;
 							}
 						}
@@ -294,8 +311,6 @@ void Game::FunState4()
 							if (enemy[j] != NULL&&j != i && enemy[j]->BeCollide(enemy[i]->verticalTop, enemy[i]->horizonTop) == true)
 							{
 								enemy[i]->horizonTop += enemy[i]->speed;
-								enemy[i]->direction++;
-								enemy[i]->direction %= 4;
 								break;
 							}
 						}
@@ -317,24 +332,22 @@ void Game::FunState4()
 			my->HP = ++my->HP % 4;
 		}
 
-		if (enemy[11]->HP >= 300)
+		if (enemy[11]->HP >= 300) //测试是否到时间生成新人质
 		{
 			if (enemy[11]->BeCollide(my->verticalTop, my->horizonTop) == true)
 			{
 				delete enemy[11];
 				enemy[11] = NULL;
 				enemyCount++;
-				int x, y;bool flag;
-			start:
-				x = rand() % (WIDTH - 300) + 300;y = rand() % (HEIGHT - 300) + 300;flag = true;
-				for (int i = 0;i < 11;i++)
-					if (enemy[i] != NULL&&enemy[i]->BeCollide(y, x) == true)
-						flag = false;
-				if (flag == true) {
-					delete enemy[11];
-					enemy[11] = new Tank(y, x, 0, 1, 100, true);
+				if (enemyCount >= 4)
+				{
+					text = L"首领已被抓住，恭喜您过关！BGM:蝙蝠侠通关后；下一关：惊弓之鸟";
+					goto win;
 				}
-				else goto start;
+				int x, y;
+				x = rand() % 250;
+				y = rand() % 250;
+				enemy[11] = new Tank(275 + y, 375 + x, 0, 1, 100, true);
 			}
 		}
 		else ++enemy[11]->HP;
@@ -365,8 +378,8 @@ void Game::FunState4()
 				TransparentBlt(mDc, enemy[i]->horizonTop, enemy[i]->verticalTop, LENGTH, LENGTH,
 					bufDc, 0, 0, LENGTH, LENGTH, RGB(0, 0, 0));
 			}
-	    }
-		if (enemy[11] != NULL && enemy[11]->HP >= 300)
+		}
+		if (enemy[11] != NULL && enemy[11]->HP >= 300) //画上群众
 		{
 			SelectObject(bufDc, mass);
 			TransparentBlt(mDc, enemy[11]->horizonTop, enemy[11]->verticalTop, LENGTH, LENGTH,
@@ -381,7 +394,7 @@ void Game::FunState4()
 					LENGTH, LENGTH, bufDc, 0, 0, LENGTH, LENGTH, RGB(0, 0, 0));
 			}
 		}
-		
+
 
 		for (int i = 0;i < 100;i++) //贴上障碍物
 		{
@@ -399,17 +412,15 @@ void Game::FunState4()
 win:
 	level++;
 fail:
-	HFONT hFont = CreateFont(80, 0, 0, 0, 0, 0, 0, 0, GB2312_CHARSET, 0, 0, 0, 0, L"微软雅黑");
+	HFONT hFont = CreateFont(30, 0, 0, 0, 0, 0, 0, 0, GB2312_CHARSET, 0, 0, 0, 0, L"微软雅黑");
 	SelectObject(hDc, hFont);
 	SetBkMode(hDc, TRANSPARENT);
-	SetTextColor(hDc, RGB(255, 255, 255));
-	TextOut(hDc, 150, 200, text, wcslen(text));
+	SetTextColor(hDc, RGB(255, 0, 255));
+	TextOut(hDc, 0, 0, text, wcslen(text));
 	DeleteObject(hFont);
 	gameOver = 1;
-	level++;
 	delete my;
 	my = NULL;
-
 }
 
 bool Game::InitLevel4()
@@ -441,22 +452,29 @@ bool Game::InitLevel4()
 			obstacle[i] = NULL;
 		}
 	}
-	speedTemp = 2;enemyCount = 0;
+	speedTemp = 3;enemyCount = 0;
 	my = new Tank(100, 0, 0, 2, 100, true);
 	for (int i = 0; i < 11; i++) //这里是初始化敌军位置和状态
 	{
-		enemy[i] = new Tank((i + 3)* LENGTH, (i + 3) * LENGTH, rand()%4, 1, 100, true);
+		enemy[i] = new Tank((i + 3)* LENGTH, (i + 3) * LENGTH, rand() % 4, 1, 100, true);
 	}
-	enemy[11] = new Tank(300, 600, 0, 0, 0,false);
+	enemy[11] = new Tank(375, 475, 0, 0, 300, false); //这个代表的是敌人首领
 	myBullet = NULL;
 	int count = 0;
 	obstacle[0] = new Obstacle(0, 0, 0);
-	obstacle[1] = new Obstacle(0, WIDTH-LENGTH, 0);
-	obstacle[2] = new Obstacle(HEIGHT-LENGTH, 0, 0);
-	obstacle[3] = new Obstacle(HEIGHT-LENGTH, WIDTH-LENGTH, 0);
+	obstacle[1] = new Obstacle(0, WIDTH - LENGTH, 0);
+	obstacle[2] = new Obstacle(HEIGHT - LENGTH, 0, 0);
+	obstacle[3] = new Obstacle(HEIGHT - LENGTH, WIDTH - LENGTH, 0);
 	gameOver = 0;
-	backGround = (HBITMAP)LoadImage(NULL, L"image\\background.bmp", IMAGE_BITMAP, WIDTH, HEIGHT, LR_LOADFROMFILE); //读取第4关游戏特有背景图（缩小版）
+	backGround = (HBITMAP)LoadImage(NULL, L"image\\backGround1.bmp", IMAGE_BITMAP, WIDTH, HEIGHT, LR_LOADFROMFILE); //读取这关游戏背景图
+	//以下四行读取这关敌人图像
+	enemyDirection0[0] = (HBITMAP)LoadImage(NULL, L"image\\4up.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE); 
+	enemyDirection0[1] = (HBITMAP)LoadImage(NULL, L"image\\4right.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);
+	enemyDirection0[2] = (HBITMAP)LoadImage(NULL, L"image\\4down.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);
+	enemyDirection0[3] = (HBITMAP)LoadImage(NULL, L"image\\4left.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);
+	
 	mass = (HBITMAP)LoadImage(NULL, L"image\\mass.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);
 	obbmp = (HBITMAP)LoadImage(NULL, L"image\\墙.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);  //障碍物素材图的读取
+	PlaySound(L"music\\4.wav", NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
 	return false;
 }
