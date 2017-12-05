@@ -1,15 +1,15 @@
+//最终决战
 #include "Game.h"
 #include <math.h>
 #define SPU 40 //子弹撞击BOSS后的溅射半径
 #define POWER 1 //这个代表我们的火力
-#define BOSSWIDTH 100 //BOSS图像的宽度,BOSS用的中心点表示法
-#define BOSSHEIGHT 100 //BOSS图像的高度
+#define BOSSWIDTH 120 //BOSS图像的宽度,BOSS用的中心点表示法
+#define BOSSHEIGHT 120 //BOSS图像的高度
 #define BOSSSPEED 120  //这个是BOSS神出鬼没的速度（最后要除以100的）
 #define BULLETRADIUS 30 //这个是天女散花的子弹半径
 #define BULLETSPEED 8   //这个是天女散花的子弹速度
 #define BOOMRADIUS 130     //这个是狂轰滥炸的最大爆炸半径
 #define BOOMSPEED 3        //这个是狂轰滥炸爆炸扩张速度
-#define WALLRADIUS 40 //这个是障碍物的半径
 #define HALF  60  //这个是小卒的直径
 #define SSS 30000 //这个代表BOSS神出鬼没的加速值，值越高，加速越慢！
 double x, y, xs, ys; //x与y是BOSS神出鬼没时的坐标值，xs与ys是神出鬼没时的两个速度值
@@ -59,9 +59,9 @@ bool Game::InitLevel8()
 	enemyDirection0[1] = (HBITMAP)::LoadImage(NULL, L"image\\太极环.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);//读取子弹背景图
 	enemyDirection0[2] = (HBITMAP)::LoadImage(NULL, L"image\\BOOM.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);//读取爆炸范围背景图
 	enemyDirection0[3] = (HBITMAP)::LoadImage(NULL, L"image\\光球.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE);//读取炸弹模样背景图
-	obbmp = (HBITMAP)::LoadImage(NULL, L"image\\墙.bmp", IMAGE_BITMAP, WALLRADIUS * 2, WALLRADIUS * 2, LR_LOADFROMFILE);//读取障碍物背景图
 	bmp = (HBITMAP)::LoadImage(NULL, L"image\\红怒.bmp", IMAGE_BITMAP, HALF, HALF, LR_LOADFROMFILE);  //读取怒卒背景图
 	bullet = (HBITMAP)::LoadImage(NULL, L"image\\大海.bmp", IMAGE_BITMAP, LENGTH, LENGTH, LR_LOADFROMFILE); //读取大海背景
+	backGround = (HBITMAP)LoadImage(NULL, L"image\\backGround1.bmp", IMAGE_BITMAP, WIDTH, HEIGHT, LR_LOADFROMFILE); //读取这关游戏背景图
 	gameOver = 0;
 	PlaySound(L"music\\8.wav", NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
 	sparkX = sparkY = 0;
@@ -131,33 +131,9 @@ void Game::FunState8()
 							enemy[i]->verticalTop + a*enemy[i]->speed < HEIGHT - 25)//垂直是否越界，是则归位
 							enemy[i]->verticalTop += a*enemy[i]->speed;
 					}
-
-					if (enemy[i]->speed == 1) //小卒没被激怒前的移动
-					{
-						//double ex = my->horizonTop - enemy[i]->horizonTop;
-						//double ey = my->verticalTop - enemy[i]->verticalTop;
-						//if (sqrt(ex*ex + ey*ey) < (HALF + LENGTH) / 2)
-						//{
-						//	my->HP -= 1;
-						//} //以上这些用于处理龟卒撞到玩家
-
-						SelectObject(bufDc, enemyDirection0[0]);
-						TransparentBlt(mDc, enemy[i]->horizonTop - HALF / 2, enemy[i]->verticalTop - HALF / 2, HALF, HALF,
-							bufDc, 0, 0, HALF, HALF, RGB(0, 0, 0));
-					}
-					else //小卒被激怒（中了BOSS的狂轰滥炸技能）后的状态
-					{
-						//double ex = my->horizonTop - enemy[i]->horizonTop;
-						//double ey = my->verticalTop - enemy[i]->verticalTop;
-						//if (sqrt(ex*ex + ey*ey) < (HALF + LENGTH) / 2)
-						//{
-						//	my->HP -= 5;
-						//} //以上这些用于处理怒卒撞到玩家
-
-						SelectObject(bufDc, bmp);
-						TransparentBlt(mDc, enemy[i]->horizonTop - HALF / 2, enemy[i]->verticalTop - HALF / 2, HALF, HALF,
-							bufDc, 0, 0, HALF, HALF, RGB(255, 255, 255));
-					}
+					SelectObject(bufDc, enemyDirection0[0]);
+					TransparentBlt(mDc, enemy[i]->horizonTop - HALF / 2, enemy[i]->verticalTop - HALF / 2, HALF, HALF,
+						bufDc, 0, 0, HALF, HALF, RGB(0, 0, 0));
 				}
 				else if (enemy[i]->fire == true) //小卒被玩家炮弹击中后，会引爆自身（天女散花）
 				{
@@ -276,7 +252,7 @@ void Game::FunState8()
 						{
 							if (enemy[i] == NULL)
 							{
-								if (count++ < 2)
+								if (count++ < 3)
 									enemy[i] = new Tank(enemy[0]->verticalTop, enemy[0]->horizonTop, 0, 1, 0, 0);
 							}
 						}
@@ -407,11 +383,11 @@ void Game::FunState8()
 				enemy[0]->horizonTop = x; //更新BOSS的水平位置
 				enemy[0]->verticalTop = y; //更新BOSS的垂直位置
 
-										   //以下这两句代码用于测试boss的终极技能（不让它真隐形）运动轨道是否靠谱，好了就删掉
-				SelectObject(bufDc, mass);
-				TransparentBlt(mDc, enemy[0]->horizonTop - BOSSWIDTH, enemy[0]->verticalTop - BOSSHEIGHT,
-					BOSSWIDTH * 2, BOSSHEIGHT * 2, bufDc, 0, 0, BOSSWIDTH * 2, BOSSHEIGHT * 2,
-					RGB(0, 0, 0));
+				////以下这两句代码用于测试boss的终极技能（不让它真隐形）运动轨道是否靠谱，好了就删掉
+				//SelectObject(bufDc, mass);
+				//TransparentBlt(mDc, enemy[0]->horizonTop - BOSSWIDTH, enemy[0]->verticalTop - BOSSHEIGHT,
+				//	BOSSWIDTH * 2, BOSSHEIGHT * 2, bufDc, 0, 0, BOSSWIDTH * 2, BOSSHEIGHT * 2,
+				//	RGB(0, 0, 0));
 
 				//以下两句代码用于给BOSS的假身贴图
 				SelectObject(bufDc, mass);
@@ -430,7 +406,7 @@ void Game::FunState8()
 			enemy[0]->HP--;
 			if (enemy[0]->HP <= -800)
 			{
-      				text = L"BOSS阵亡，恭喜您通关！";
+      				text = L"BOSS阵亡，恭喜您通关！BGM：双截龙3刚进金字塔时";
 	     			goto win;
 			}
 			if ((-enemy[0]->HP) % 2 == 0) //不能让它乱炸的那么快
@@ -612,10 +588,10 @@ void Game::FunState8()
 win:
 	;
 fail:
-	HFONT hFont = CreateFont(80, 0, 0, 0, 0, 0, 0, 0, GB2312_CHARSET, 0, 0, 0, 0, L"微软雅黑");
+	HFONT hFont = CreateFont(40, 0, 0, 0, 0, 0, 0, 0, GB2312_CHARSET, 0, 0, 0, 0, L"微软雅黑");
 	SelectObject(hDc, hFont);
 	SetBkMode(hDc, TRANSPARENT);
-	SetTextColor(hDc, RGB(255, 255, 255));
+	SetTextColor(hDc, RGB(255, 0, 255));
 	TextOut(hDc, 100, 400, text, wcslen(text));
 	DeleteObject(hFont);
 	gameOver = 1;
