@@ -23,7 +23,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	wndClass.hCursor = LoadCursor(NULL, IDC_ARROW); //指定窗口类的光标句柄。
 	wndClass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);  //为hbrBackground成员指定一个白色画刷句柄	
 	wndClass.lpszMenuName = NULL; //设置菜单资源为空。
-	wndClass.lpszClassName = L"坦克小战，作者：范效萌"; //用一个以空终止的字符串，指定窗口类的名字。
+	wndClass.lpszClassName = L"坦克小战，作者：范效萌（刷新关卡请按Tab）"; //给我们的窗口命名。
 
 	if (!RegisterClassEx(&wndClass)) return -1;
 
