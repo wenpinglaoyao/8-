@@ -30,7 +30,7 @@ void Game::FunState6()
 					enemyCount--;
 					if (enemyCount <= 0)
 					{
-						text = L"敌人全部被球碾死，恭喜过关！BGM:赤影战士第一关；下一关：横扫千军";
+						text = L"蟹星人全部被撞到千里之外，恭喜过关！BGM:赤影战士第一关；下一关：横扫千军";
 						goto win;
 					}
 				}
