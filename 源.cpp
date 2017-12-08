@@ -28,7 +28,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	if (!RegisterClassEx(&wndClass)) return -1;
 
 
-	HWND hWnd = CreateWindow(wndClass.lpszClassName, L"机甲传说，作者by范效萌",
+	HWND hWnd = CreateWindow(wndClass.lpszClassName, L"坦克小战，作者by范效萌",
 		WS_OVERLAPPEDWINDOW & ~WS_MAXIMIZEBOX & ~WS_THICKFRAME,//这3个表示不允许改变窗口大小
 		CW_USEDEFAULT, CW_USEDEFAULT,
 		WINDOW_WIDTH, WINDOW_HEIGHT, NULL, NULL, hInstance, NULL);
