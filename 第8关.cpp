@@ -3,8 +3,8 @@
 #include <math.h>
 #define SPU 40 //子弹撞击BOSS后的溅射半径
 #define POWER 1 //这个代表我们的火力
-#define BOSSWIDTH 120 //BOSS图像的宽度,BOSS用的中心点表示法
-#define BOSSHEIGHT 120 //BOSS图像的高度
+#define BOSSWIDTH 100 //BOSS图像的一半宽度
+#define BOSSHEIGHT 100 //BOSS图像的一半高度
 #define BOSSSPEED 120  //这个是BOSS神出鬼没的速度（最后要除以100的）
 #define BULLETRADIUS 30 //这个是天女散花的子弹半径
 #define BULLETSPEED 8   //这个是天女散花的子弹速度
