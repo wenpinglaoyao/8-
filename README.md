@@ -52,3 +52,15 @@ the snow war made us aware of serious problem：that the enemy seems to process 
 enemy behavior：go straight ahead，hit the wall back，bump the other enemy will stop，touch you turn clockwise
 
 level mission：touch 4 special enemy
+
+
+
+
+level of 5:the frightened bird
+by questioning the villain “BOSS” we find，this boss is just a puppet of a dirty trade，the real villain behind the scenes is crab star man；crab star is a distant and powerful planet，the inhabitants of the planet are bulletproof！but one day the crab people through the discovery of the outside，the earth has a mysterious laser，can cause real damage to the crab body.this discovery made the crab very anxious，so they planned to implant their armed forces on earth and then find the laser and finally study or destroy her...however，in the course of obtaining this information，as the puppet exceeds 24 hours without contact the crab，initiates the enemy's information protected action：all information about the laser is divided into N part and escorted by N enemies，and each enemy is blown up to destroy the data when he is destroyed...but luckily we have the quick-frozen-cannon technology，now let's take the lead to chase these enemies！
+
+the behavior of enemy：always forward，a wall back.
+
+level mission：eliminate 20 enemies.
+
+note：enemy is afraid of the hero's power,
