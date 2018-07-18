@@ -63,4 +63,32 @@ the behavior of enemy：always forward，a wall back.
 
 level mission：eliminate 20 enemies.
 
-note：enemy is afraid of the hero's power,
+note：enemy is afraid of the hero's power,if they hear the main hero fire，they follow fire
+
+tips：try to use the placeholder to force the enemy into a more concentrated area to destroy
+
+
+
+
+level of 6：the King of the football made by steel
+we have been informed of the origins of laser technology，but found the crab has sent his own advance troops there to guard，and through several battles with the crab people we found that they are not only afraid of we weapons on earth，and they also can summon the meteorite in outer space to hit us！after a few small losses，we made a plan：use the enemy's strength to attack themselves，and this time we brought a big ball into the battlefield and use it to repel the crabs
+
+enemy behavior law： walking irregular，has been fired artillery shells
+
+level mission：eliminate 12 enemies.
+
+note：when meteorites are secular，time is still.
+
+tips：talks about trouble，but I believe you can understand.
+
+
+
+
+level of 7：annihilation
+although we kicked out the unrelated watchdog，we found that the seven elders who were in control of the laser technology were stubborn：they believed that lasers were rationed to the stronger，even the stronger is evil，so long as they were strong enough to have the technology.helpless，we decided to conquer seven elders with the strength，this time，if we win this wheels off victory，we can obtain the laser technology.
+
+enemy behavior law：still motionless
+
+level mission：eliminate 7 enemies
+
+tips：first around the ball and circle.
